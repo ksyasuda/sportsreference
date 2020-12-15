@@ -424,9 +424,14 @@ class Player(AbstractPlayer):
         player_info : PyQuery object
             A PyQuery object containing the HTML from the player's stats page.
         """
-        for field in ['_height', '_weight', '_name']:
+        for field in ['_height', '_weight', '_name', '_position']:
             short_field = str(field)[1:]
             value = utils._parse_field(PLAYER_SCHEME, player_info, short_field)
+            idx = 1
+            while short_field == 'position' and value == '':
+                value = utils._parse_field(PLAYER_SCHEME, player_info,
+                                           short_field, index=idx)
+                idx += 1
             setattr(self, field, value)
 
     def _parse_birth_date(self, player_info):
@@ -732,9 +737,13 @@ class Player(AbstractPlayer):
     @property
     def position(self):
         """
-        Returns a ``string`` of the player's primary position.
+        Returns an upper case ``string`` of the player's primary position.
+        Returns an empty ``string`` if no primary position can be found
         """
-        return self._position[self._index]
+        if hasattr(self._position, 'upper'):
+            return self._position.upper()
+        else:
+            return ''
 
     @property
     def height(self):
